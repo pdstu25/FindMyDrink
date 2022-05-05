@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.BufferedReader
 import java.net.HttpURLConnection
 import java.net.URL
@@ -206,15 +207,25 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 connection.disconnect()
             }
 
-            val json = JSONObject(jsonSearchStr)
+            /*val json = JSONObject(jsonSearchStr)
 
             val drinkOBJ = json.getJSONArray("drinks")
 
-            for (itemIdx in 0 until drinkOBJ.length()) {
+            var drinkName = drinkOBJ.getJSONObject.getString("strDrink")
+            Log.i("STATUS_DRINKNAME", drinkName)*/
+            //Trying nested json approach
+            val jsonObject = JSONTokener(jsonSearchStr).nextValue() as JSONObject
+            val jsonArray = jsonObject.getJSONArray("drinks")
+
+            for (i in 0 until jsonArray.length()) {
+                val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
+                Log.i("STATUS_DRINKNAME", drinkName)
+            }
+            /*for (itemIdx in 0 until drinkOBJ.length()) {
                 val drinkObjString = drinkOBJ.getString(itemIdx)
 
-                Log.i("STATUS_DOWNLOADLOOP: ", drinkObjString.toString())
-            }
+                Log.i("STATUS_DOWNLOADLOOP: ", "${drinkObjString.toString()}")
+            }*/
         }
     }
 }
