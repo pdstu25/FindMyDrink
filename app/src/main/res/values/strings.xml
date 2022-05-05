@@ -6,5 +6,16 @@
     <!-- Spinner item array -->
     <string-array name="DrinkSelection">
         <item>Random</item>
+        <item>Ordinary Drink</item>
+        <item>Cocktail</item>
+        <item>Shake</item>
+        <item>Other/Unknown</item>
+        <item>Cocoa</item>
+        <item>Shot</item>
+        <item>Coffee / Tea</item>
+        <item>Homemade Liqueur</item>
+        <item>Punch / Party Drink</item>
+        <item>Beer</item>
+        <item>Soft Drink</item>
     </string-array>
 </resources>
