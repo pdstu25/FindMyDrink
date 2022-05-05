@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             if(parent.getId() == R.id.selectDrink_spinner) {
                 val text: String = parent?.getItemAtPosition(position).toString()
                 drinkSelected = text
-                Log.i("STATUS stateSelected Variable: ", drinkSelected)
+                Log.i("STATUS drinkSelected Variable: ", drinkSelected)
             }
         }
     }
