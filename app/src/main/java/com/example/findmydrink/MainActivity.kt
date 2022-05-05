@@ -17,10 +17,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.findmydrink.databinding.ActivityMainBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.BufferedReader
@@ -207,25 +204,20 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 connection.disconnect()
             }
 
-            /*val json = JSONObject(jsonSearchStr)
-
-            val drinkOBJ = json.getJSONArray("drinks")
-
-            var drinkName = drinkOBJ.getJSONObject.getString("strDrink")
-            Log.i("STATUS_DRINKNAME", drinkName)*/
-            //Trying nested json approach
+            //nested json approach
             val jsonObject = JSONTokener(jsonSearchStr).nextValue() as JSONObject
             val jsonArray = jsonObject.getJSONArray("drinks")
 
             for (i in 0 until jsonArray.length()) {
                 val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
+                DRINKNAMES.add(DrinkObject(drinkName))
                 Log.i("STATUS_DRINKNAME", drinkName)
             }
-            /*for (itemIdx in 0 until drinkOBJ.length()) {
-                val drinkObjString = drinkOBJ.getString(itemIdx)
 
-                Log.i("STATUS_DOWNLOADLOOP: ", "${drinkObjString.toString()}")
-            }*/
+            withContext(Dispatchers.Main) {
+                val adapter = MyAdapter()
+                binding.drinkNameRecyclerView.setAdapter(adapter)
+            }
         }
     }
 }
