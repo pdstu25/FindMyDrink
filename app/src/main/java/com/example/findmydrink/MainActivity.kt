@@ -1,5 +1,9 @@
 package com.example.findmydrink
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -44,5 +48,42 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     override fun onNothingSelected(p0: AdapterView<*>?) {
         TODO("Not yet implemented")
+    }
+
+    fun isNetworkAvailable(): Boolean {
+        var available = false
+
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        cm.run {
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+
+                // code for newer versions
+                cm.getNetworkCapabilities(cm.activeNetwork)?.run {
+                    if (hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
+                        || hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+                        || hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+                    ) {
+                        available = true
+                    }
+                }
+
+            } else {
+
+                // code for older versions
+                cm.getActiveNetworkInfo()?.run {
+                    if (type == ConnectivityManager.TYPE_MOBILE
+                        || type == ConnectivityManager.TYPE_WIFI
+                        || type == ConnectivityManager.TYPE_VPN
+                    ) {
+                        available = true
+                    }
+                }
+
+            }
+        }
+
+        return available
     }
 }
