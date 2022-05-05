@@ -1,26 +1,50 @@
 package com.example.findmydrink
 
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import android.view.ViewGroup
+import android.widget.*
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.findmydrink.databinding.ActivityMainBinding
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
-    var drinkSelected : String = ""
+    var drinkSelected: String = ""
+    private val DRINKNAMES = mutableListOf<DrinkObject>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val layoutManager = LinearLayoutManager(this)
+
+        binding.findDrinkButton.setOnClickListener(DownloadListener())
+
+        //RecyclerView
+        binding.drinkNameRecyclerView.setLayoutManager(layoutManager)
+        binding.drinkNameRecyclerView.setHasFixedSize(true)
+        val divider = DividerItemDecoration(applicationContext, layoutManager.orientation)
+        binding.drinkNameRecyclerView.addItemDecoration(divider)
 
         //Spinner
         drinkSelectSpinner()
@@ -38,7 +62,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
         if (parent != null) {
-            if(parent.getId() == R.id.selectDrink_spinner) {
+            if (parent.getId() == R.id.selectDrink_spinner) {
                 val text: String = parent?.getItemAtPosition(position).toString()
                 drinkSelected = text
                 Log.i("STATUS drinkSelected Variable: ", drinkSelected)
@@ -85,5 +109,112 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         }
 
         return available
+    }
+
+    inner class MyViewHolder(val view: View) :
+        RecyclerView.ViewHolder(view),
+        View.OnClickListener {
+
+        init {
+            view.findViewById<View>(R.id.item_constraintLayout)
+                .setOnClickListener(this)
+        }
+
+        fun setTitle(title: DrinkObject) {
+            view.findViewById<TextView>(R.id.textView_RecycleView).setText(title.strDrink)
+        }
+
+        override fun onClick(p0: View?) {
+            Toast.makeText(
+                applicationContext,
+                "You click a drink name", Toast.LENGTH_LONG
+            ).show()
+        }
+
+        /*override fun onClick(p0: View?) {
+            if (p0 != null) {
+                val intent = Intent(view.context, ArtObjectActivity::class.java)
+                val applyArtObjects = METOBJECTSTRING[adapterPosition]
+                intent.putExtra(
+                    "artKey",
+                    applyArtObjects
+                )
+                startActivity(intent)
+            }
+        }*/
+    }
+
+    inner class MyAdapter() : RecyclerView.Adapter<MyViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_view, parent, false)
+            return MyViewHolder(view)
+        }
+
+        override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+            holder.setTitle(DRINKNAMES[position])
+        }
+
+        override fun getItemCount(): Int {
+            return DRINKNAMES.size
+        }
+    }
+
+    private var downloadJob: Job? = null
+
+    var randomPath = ""
+
+    inner class DownloadListener : View.OnClickListener {
+        override fun onClick(view: View?) {
+            Log.i("STATUS_STDL", drinkSelected)
+            if (drinkSelected.isEmpty()) {
+                Toast.makeText(
+                    applicationContext,
+                    "Input required", Toast.LENGTH_SHORT
+                ).show()
+            } else if (isNetworkAvailable()) {
+                //https://www.thecocktaildb.com/api/json/v1/1/random.php
+                if (downloadJob?.isActive != true) {
+                    val randomDrinkURL = Uri.Builder()
+                        .scheme("https")
+                        .authority("thecocktaildb.com")
+                        .path("/api/json/v1/1/random.php")
+                    randomPath = randomDrinkURL.build().toString()
+
+                    startDownload()
+                }
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    "Network not available", Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun startDownload() {
+        downloadJob = CoroutineScope(Dispatchers.IO).launch {
+            val searchUrl = URL(randomPath)
+            val connection: HttpURLConnection = searchUrl.openConnection() as HttpURLConnection
+
+            var jsonSearchStr = ""
+
+            try {
+                jsonSearchStr = connection.getInputStream()
+                    .bufferedReader().use(BufferedReader::readText)
+            } finally {
+                connection.disconnect()
+            }
+
+            val json = JSONObject(jsonSearchStr)
+
+            val drinkOBJ = json.getJSONArray("drinks")
+
+            for (itemIdx in 0 until drinkOBJ.length()) {
+                val drinkObjString = drinkOBJ.getString(itemIdx)
+
+                Log.i("STATUS_DOWNLOADLOOP: ", drinkObjString.toString())
+            }
+        }
     }
 }
