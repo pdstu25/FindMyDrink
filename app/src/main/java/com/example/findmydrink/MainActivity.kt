@@ -160,7 +160,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
     private var downloadJob: Job? = null
 
-    var randomPath = ""
+    var urlPath = ""
 
     inner class DownloadListener : View.OnClickListener {
         override fun onClick(view: View?) {
@@ -173,12 +173,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             } else if (isNetworkAvailable()) {
                 //https://www.thecocktaildb.com/api/json/v1/1/random.php
                 if (downloadJob?.isActive != true) {
-                    val randomDrinkURL = Uri.Builder()
-                        .scheme("https")
-                        .authority("thecocktaildb.com")
-                        .path("/api/json/v1/1/random.php")
-                    randomPath = randomDrinkURL.build().toString()
-
+                    setDownloadLink()
                     startDownload()
                 }
             } else {
@@ -190,9 +185,35 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         }
     }
 
+    private fun setDownloadLink(): String {
+        if(drinkSelected.equals("Random")) {
+            val randomDrinkURL = Uri.Builder()
+                .scheme("https")
+                .authority("thecocktaildb.com")
+                .path("/api/json/v1/1/random.php")
+            urlPath = randomDrinkURL.build().toString()
+        } else if (drinkSelected.equals("Ordinary Drink")) {
+            val randomDrinkURL = Uri.Builder()
+                .scheme("https")
+                .authority("thecocktaildb.com")
+                .path("/api/json/v1/1/filter.php")
+                .appendQueryParameter("c", "Ordinary_Drink")
+            urlPath = randomDrinkURL.build().toString()
+        } else {
+            val randomDrinkURL = Uri.Builder()
+                .scheme("https")
+                .authority("thecocktaildb.com")
+                .path("/api/json/v1/1/filter.php")
+                .appendQueryParameter("c", drinkSelected)
+            urlPath = randomDrinkURL.build().toString()
+        }
+
+        return urlPath
+    }
+
     private fun startDownload() {
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
-            val searchUrl = URL(randomPath)
+            val searchUrl = URL(urlPath)
             val connection: HttpURLConnection = searchUrl.openConnection() as HttpURLConnection
 
             var jsonSearchStr = ""
