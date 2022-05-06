@@ -12,5 +12,11 @@ class DrinkObjectActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityDrinkObjectBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val intent = getIntent()
+
+        val drinkInfo = intent.getSerializableExtra(
+            "drinkKey"
+        ) as DrinkObject
     }
 }
