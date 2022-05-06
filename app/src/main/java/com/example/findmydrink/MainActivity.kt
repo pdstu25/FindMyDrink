@@ -26,7 +26,9 @@ import java.net.URL
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     var drinkSelected: String = ""
+    var drinkID : String = ""
     private val DRINKNAMES = mutableListOf<DrinkObject>()
+    private val DRINKID = mutableListOf<DrinkObject>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -142,10 +144,15 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         }
 
         override fun onClick(p0: View?) {
-            Toast.makeText(
-                applicationContext,
-                "You click a drink name", Toast.LENGTH_LONG
-            ).show()
+            if (p0 != null) {
+                val intent = Intent(view.context, DrinkObjectActivity::class.java)
+                val applyDrinkObjects = DRINKNAMES[adapterPosition]
+                intent.putExtra(
+                    "drinkKey",
+                    applyDrinkObjects
+                )
+                startActivity(intent)
+            }
         }
 
         /*override fun onClick(p0: View?) {
@@ -251,7 +258,9 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
             for (i in 0 until jsonArray.length()) {
                 val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
+                val idDrink = jsonArray.getJSONObject(i).getString("idDrink")
                 DRINKNAMES.add(DrinkObject(drinkName))
+                DRINKID.add(DrinkObject(idDrink))
                 Log.i("STATUS_DRINKNAME", drinkName)
             }
 

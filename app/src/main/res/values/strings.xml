@@ -23,4 +23,7 @@
         <item>Beer</item>
         <item>Soft Drink</item>
     </string-array>
+
+    <!--Intent keys -->
+    <string name="drink_intent_key">drinkKey</string>
 </resources>
