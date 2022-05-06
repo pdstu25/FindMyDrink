@@ -212,6 +212,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun startDownload() {
+        DRINKNAMES.clear()
         downloadJob = CoroutineScope(Dispatchers.IO).launch {
             val searchUrl = URL(urlPath)
             val connection: HttpURLConnection = searchUrl.openConnection() as HttpURLConnection
