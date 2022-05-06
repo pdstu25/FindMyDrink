@@ -2,6 +2,7 @@
     <string name="app_name">FindMyDrink</string>
     <string name="select_drink">Select Drink</string>
     <string name="text">Text</string>
+    <string name="about">About</string>
 
     <!-- Spinner item array -->
     <string-array name="DrinkSelection">
