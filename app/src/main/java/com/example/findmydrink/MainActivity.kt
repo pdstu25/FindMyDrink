@@ -28,7 +28,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     var drinkSelected: String = ""
     var drinkID : String = ""
     private val DRINKNAMES = mutableListOf<DrinkObject>()
-    private val DRINKID = mutableListOf<DrinkObject>()
+    private val DRINKID = mutableListOf<String>()
+    private val DRINKOBJ = mutableListOf<DrinkObject>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -260,8 +261,40 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
                 val idDrink = jsonArray.getJSONObject(i).getString("idDrink")
                 DRINKNAMES.add(DrinkObject(drinkName))
-                DRINKID.add(DrinkObject(idDrink))
+                DRINKID.add(idDrink)
                 Log.i("STATUS_DRINKNAME", drinkName)
+            }
+
+            for (i in 0 until DRINKID.size) {
+                drinkID = DRINKID[i]
+                var objIDUrl = ""
+                val idURL = Uri.Builder()
+                    .scheme("https")
+                    .authority("thecocktaildb.com")
+                    .path("/api/json/v1/1/lookup.php")
+                    .appendQueryParameter("i", drinkID)
+                objIDUrl = idURL.build().toString()
+
+                val searchUrl = URL(objIDUrl)
+                val connection: HttpURLConnection = searchUrl.openConnection() as HttpURLConnection
+
+                var jsonSearchStr = ""
+
+                try {
+                    jsonSearchStr = connection.getInputStream()
+                        .bufferedReader().use(BufferedReader::readText)
+                } finally {
+                    connection.disconnect()
+                }
+
+                val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
+                val idDrink = jsonArray.getJSONObject(i).getString("idDrink")
+                val strInstructions = jsonArray.getJSONObject(i).getString("strInstructions")
+                val strDrinkThumb = jsonArray.getJSONObject(i).getString("strDrinkThumb")
+
+                DRINKOBJ.add((DrinkObject("${drinkName}", "${idDrink}",
+                    "${strInstructions}", "${strDrinkThumb}")))
+                Log.i("STATUS_DRINKIDURL", objIDUrl)
             }
 
             withContext(Dispatchers.Main) {
