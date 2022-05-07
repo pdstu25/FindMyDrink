@@ -35,6 +35,7 @@ class DrinkObjectActivity : AppCompatActivity() {
         Log.i("STATUS_DRINKNAMEOBJ", drinkInfo.strDrink)
         binding.instructionTextView.setText(drinkInfo.strInstructions)
         Log.i("STATUS_strInstructions", drinkInfo.strInstructions)
+        Log.i("STATUS_imageURL", drinkInfo.strDrinkThumb)
     }
 
     private fun imageDownload(strDrinkThumb: String) {

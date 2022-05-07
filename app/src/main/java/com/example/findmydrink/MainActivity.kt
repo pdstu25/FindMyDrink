@@ -147,7 +147,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
         override fun onClick(p0: View?) {
             if (p0 != null) {
                 val intent = Intent(view.context, DrinkObjectActivity::class.java)
-                val applyDrinkObjects = DRINKNAMES[adapterPosition]
+                val applyDrinkObjects = DRINKOBJ[adapterPosition]
                 intent.putExtra(
                     "drinkKey",
                     applyDrinkObjects
@@ -294,7 +294,8 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
 
                 DRINKOBJ.add((DrinkObject("${drinkName}", "${idDrink}",
                     "${strInstructions}", "${strDrinkThumb}")))
-                Log.i("STATUS_DRINKIDURL", objIDUrl)
+                Log.i("STATUS_objectsAdded", "${drinkName}, ${idDrink}, ${strInstructions}," +
+                        " ${strDrinkThumb}")
             }
 
             withContext(Dispatchers.Main) {
