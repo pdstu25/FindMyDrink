@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.findmydrink.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
+import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.BufferedReader
@@ -26,7 +27,7 @@ import java.net.URL
 class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityMainBinding
     var drinkSelected: String = ""
-    var drinkID : String = ""
+    private var drinkID: String = ""
     private val DRINKNAMES = mutableListOf<DrinkObject>()
     private val DRINKID = mutableListOf<String>()
     private val DRINKOBJ = mutableListOf<DrinkObject>()
@@ -155,18 +156,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                 startActivity(intent)
             }
         }
-
-        /*override fun onClick(p0: View?) {
-            if (p0 != null) {
-                val intent = Intent(view.context, ArtObjectActivity::class.java)
-                val applyArtObjects = METOBJECTSTRING[adapterPosition]
-                intent.putExtra(
-                    "artKey",
-                    applyArtObjects
-                )
-                startActivity(intent)
-            }
-        }*/
     }
 
     inner class MyAdapter() : RecyclerView.Adapter<MyViewHolder>() {
@@ -198,7 +187,6 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     "Input required", Toast.LENGTH_SHORT
                 ).show()
             } else if (isNetworkAvailable()) {
-                //https://www.thecocktaildb.com/api/json/v1/1/random.php
                 if (downloadJob?.isActive != true) {
                     setDownloadLink()
                     startDownload()
@@ -213,7 +201,7 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     }
 
     private fun setDownloadLink(): String {
-        if(drinkSelected.equals("Random")) {
+        if (drinkSelected.equals("Random")) {
             val randomDrinkURL = Uri.Builder()
                 .scheme("https")
                 .authority("thecocktaildb.com")
@@ -260,13 +248,12 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
             for (i in 0 until jsonArray.length()) {
                 val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
                 val idDrink = jsonArray.getJSONObject(i).getString("idDrink")
-                DRINKNAMES.add(DrinkObject(drinkName))
-                DRINKID.add(idDrink)
-                Log.i("STATUS_DRINKNAME", drinkName)
+                DRINKNAMES.add(DrinkObject("${drinkName}", "${idDrink}"))
             }
 
-            for (i in 0 until DRINKID.size) {
-                drinkID = DRINKID[i]
+            for (i in 0 until DRINKNAMES.size) {
+                drinkID = DRINKNAMES[i].idDrink
+
                 var objIDUrl = ""
                 val idURL = Uri.Builder()
                     .scheme("https")
@@ -274,28 +261,31 @@ class MainActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
                     .path("/api/json/v1/1/lookup.php")
                     .appendQueryParameter("i", drinkID)
                 objIDUrl = idURL.build().toString()
+                val newsearchUrl = URL(objIDUrl)
+                val connection: HttpURLConnection = newsearchUrl.openConnection() as HttpURLConnection
 
-                val searchUrl = URL(objIDUrl)
-                val connection: HttpURLConnection = searchUrl.openConnection() as HttpURLConnection
-
-                var jsonSearchStr = ""
+                var newjsonSearchStr = ""
 
                 try {
-                    jsonSearchStr = connection.getInputStream()
+                    newjsonSearchStr = connection.getInputStream()
                         .bufferedReader().use(BufferedReader::readText)
                 } finally {
                     connection.disconnect()
                 }
 
-                val drinkName = jsonArray.getJSONObject(i).getString("strDrink")
-                val idDrink = jsonArray.getJSONObject(i).getString("idDrink")
-                val strInstructions = jsonArray.getJSONObject(i).getString("strInstructions")
-                val strDrinkThumb = jsonArray.getJSONObject(i).getString("strDrinkThumb")
+                val json = JSONObject(newjsonSearchStr)
+                var newjsonArray = json.getJSONArray("drinks")
 
-                DRINKOBJ.add((DrinkObject("${drinkName}", "${idDrink}",
-                    "${strInstructions}", "${strDrinkThumb}")))
-                Log.i("STATUS_objectsAdded", "${drinkName}, ${idDrink}, ${strInstructions}," +
-                        " ${strDrinkThumb}")
+                for (i in 0 until newjsonArray.length()) {
+                    Log.i("STATUS_newjsonArray", newjsonArray.getString(i))
+                    val drinkName = newjsonArray.getJSONObject(i).getString("strDrink")
+                    val idDrink = newjsonArray.getJSONObject(i).getString("idDrink")
+                    val strInstructions = newjsonArray.getJSONObject(i).getString("strInstructions")
+                    val strDrinkThumb = newjsonArray.getJSONObject(i).getString("strDrinkThumb")
+
+                    DRINKOBJ.add((DrinkObject("${drinkName}", "${idDrink}",
+                        "${strInstructions}", "${strDrinkThumb}")))
+                }
             }
 
             withContext(Dispatchers.Main) {
